@@ -1,0 +1,13 @@
+{
+  "name": "echoascii",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "figlet": "^1.2.0",
+    "rcfile": "^1.0.3"
+  },
+  "bin": {
+    "echoascii": "bin/echoascii.js"
+  }
+}
