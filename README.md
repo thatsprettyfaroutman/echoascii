@@ -1,11 +1,21 @@
 # echoascii 😱
 
-Uses figlet font system to render ascii text to terminal
+Uses figlet font system to render ascii text into terminal
 
 ![echoascii](https://thumbs.gfycat.com/DisloyalHappyBluefintuna-size_restricted.gif)
 
-### `.echoasciirc`
+#### Usage
+`yarn add echoascii`
+
+or
+
+`npm i echoascii`
+
+#### Config
+
 ```
+.echoasciirc
+
 {
   "font": <font name>
 }
