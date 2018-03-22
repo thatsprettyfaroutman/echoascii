@@ -1,4 +1,4 @@
-#! /usr/bind/env node
+#!/usr/bin/env node
 if (process.argv.length <= 2) process.exit(-1)
 
 const figlet = require('figlet')

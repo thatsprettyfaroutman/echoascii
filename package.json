@@ -9,5 +9,16 @@
   },
   "bin": {
     "echoascii": "bin/echoascii.js"
+  },
+    "repository": {
+    "type": "git",
+    "url": "https://github.com/thatsprettyfaroutman/echoascii"
+  },
+  "keywords": [
+    "ascii"
+  ],
+  "author": {
+    "name": "Viljami Anttonen",
+    "email": "viljami.anttonen@gmail.com"
   }
 }
