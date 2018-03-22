@@ -11,6 +11,6 @@ Uses figlet font system to render ascii text to terminal
 }
 ```
 
-### For fonts check out
+### Find fonts from ->
 
 [http://patorjk.com/software/taag](http://patorjk.com/software/taag)
