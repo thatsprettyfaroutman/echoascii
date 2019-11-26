@@ -10,7 +10,6 @@ const config = rcfile('echoascii')
 
 // Args
 const args = process.argv.slice(2)
-console.log(args)
 
 // Default config
 if (!config.font) config.font = 'Larry 3D'
@@ -35,7 +34,6 @@ const options = [
 // Run options
 args.forEach(arg =>
   options.forEach(([flag, modifier]) => {
-    console.log(arg, flag, arg.indexOf(flag))
     if (arg.indexOf(flag) === 0) {
       modifier(arg)
     }
