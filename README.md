@@ -10,6 +10,8 @@ Uses figlet font system to render ascii text into terminal
 
 `npx echoascii --font='Larry 3D' hello there`
 
+`npx echoascii --rows 'first row' 'second row'`
+
 Note. `--font` value is case sensitive
 
 #### Add to your project

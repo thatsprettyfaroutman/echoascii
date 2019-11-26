@@ -10,6 +10,7 @@ const config = rcfile('echoascii')
 
 // Args
 const args = process.argv.slice(2)
+console.log(args)
 
 // Default config
 if (!config.font) config.font = 'Larry 3D'
@@ -22,14 +23,21 @@ const options = [
       const font = arg.replace('--font=', '').trim()
       config.font = font
     }
+  ],
+  [
+    '--rows',
+    () => {
+      config.rows = true
+    }
   ]
 ]
 
 // Run options
 args.forEach(arg =>
-  options.forEach(option => {
-    if (arg.indexOf(option[0]) === 0) {
-      option[1](arg)
+  options.forEach(([flag, modifier]) => {
+    console.log(arg, flag, arg.indexOf(flag))
+    if (arg.indexOf(flag) === 0) {
+      modifier(arg)
     }
   })
 )
@@ -37,7 +45,7 @@ args.forEach(arg =>
 // Words
 const words = args
   .filter(arg => !options.find(option => arg.includes(option[0])))
-  .join(' ')
+  .join(config.rows ? '\n ' : ' ')
 
 // Convert to ascii
 const result = figlet.textSync(`\n ${words} \n`, {
