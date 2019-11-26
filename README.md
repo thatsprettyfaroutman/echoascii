@@ -4,20 +4,21 @@ Uses figlet font system to render ascii text into terminal
 
 ![echoascii](https://thumbs.gfycat.com/DisloyalHappyBluefintuna-size_restricted.gif)
 
-
 #### Try it with npx
-`npx echoascii sweet`
 
+`npx echoascii sweet dude`
 
+`npx echoascii --font='Larry 3D' hello there`
+
+Note. `--font` value is case sensitive
 
 #### Add to your project
+
 `yarn add echoascii`
 
 or
 
 `npm i --save echoascii`
-
-
 
 #### Config
 
@@ -28,7 +29,6 @@ or
   "font": <font name>
 }
 ```
-
 
 #### Find fonts from ->
 
