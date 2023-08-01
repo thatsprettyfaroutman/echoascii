@@ -7,7 +7,6 @@ if (process.argv.length <= 2) {
 const figlet = require('figlet')
 const loadrc = require('loadrc')
 const config = loadrc.load('echoascii') || {}
-console.log(config)
 
 // Args
 const args = process.argv.slice(2)
