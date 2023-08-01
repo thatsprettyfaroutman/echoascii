@@ -5,8 +5,9 @@ if (process.argv.length <= 2) {
 }
 
 const figlet = require('figlet')
-const rcfile = require('rcfile')
-const config = rcfile('echoascii')
+const loadrc = require('loadrc')
+const config = loadrc.load('echoascii') || {}
+console.log(config)
 
 // Args
 const args = process.argv.slice(2)
@@ -18,21 +19,21 @@ if (!config.font) config.font = 'Larry 3D'
 const options = [
   [
     '--font',
-    arg => {
+    (arg) => {
       const font = arg.replace('--font=', '').trim()
       config.font = font
-    }
+    },
   ],
   [
     '--rows',
     () => {
       config.rows = true
-    }
-  ]
+    },
+  ],
 ]
 
 // Run options
-args.forEach(arg =>
+args.forEach((arg) =>
   options.forEach(([flag, modifier]) => {
     if (arg.indexOf(flag) === 0) {
       modifier(arg)
@@ -42,14 +43,14 @@ args.forEach(arg =>
 
 // Words
 const words = args
-  .filter(arg => !options.find(option => arg.includes(option[0])))
+  .filter((arg) => !options.find((option) => arg.includes(option[0])))
   .join(config.rows ? '\n ' : ' ')
 
 // Convert to ascii
 const result = figlet.textSync(`\n ${words} \n`, {
   font: config.font,
   horizontalLayout: 'default',
-  verticalLayout: 'default'
+  verticalLayout: 'default',
 })
 
 // Render

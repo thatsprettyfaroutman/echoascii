@@ -4,12 +4,12 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "figlet": "^1.2.0",
-    "rcfile": "^1.0.3"
+    "figlet": "1.6.0",
+    "loadrc": "1.0.0"
   },
   "bin": "bin/echoascii.js",
   "scripts": {
-    "start": "yarn node ./bin/echoascii.js --font='Larry 3D' hello world --font='Small' oomg \n line break"
+    "start": "node ./bin/echoascii.js --font='Larry 3D' hello world --font='Small' oomg \n line break"
   },
   "repository": {
     "type": "git",
