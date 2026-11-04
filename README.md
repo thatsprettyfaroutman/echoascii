@@ -10,6 +10,8 @@
 
 ![echoascii --type --gradient cyan,magenta 'hello there'](docs/recordings/type.gif)
 
+![echoascii --pick --gradient cyan,magenta hello](docs/recordings/pick.gif)
+
 ![echoascii --clock --center --font 'ANSI Shadow' --gradient cyan,magenta](docs/recordings/clock.gif)
 
 ![echoascii --countdown 5 --border --gradient yellow,red "Time's up!"](docs/recordings/countdown.gif)
@@ -33,6 +35,7 @@ You can also add it to a project with `npm i echoascii`. Requires Node.js 18.3 o
 ```
 echoascii hello                              # big text in the default font
 echoascii --font 'ANSI Shadow' hi there      # pick from 330+ fonts
+echoascii --pick hello                       # browse fonts with a live preview
 echoascii --rows 'first row' 'second row'    # one row per argument
 echoascii --center --border hello            # center it and draw a box around it
 echoascii --gradient red,blue hello          # smooth color gradient
@@ -64,6 +67,7 @@ git branch --show-current | echoascii        # pipe text in
 | `--flow` | Make the rainbow or gradient flow, until ctrl+c. Uses the rainbow unless there's a gradient. |
 | `--clock` | Show a live clock |
 | `--countdown <time>` | Count down from `90`, `90s`, `5m`, `1h30m` or `10:00`, then show the text |
+| `-p, --pick` | Pick a font with a live preview: arrows browse, typing searches, enter prints the banner and the command for it |
 | `--random` | Use a random font. Its name is printed to stderr. |
 | `-l, --list-fonts` | List all fonts, or preview your text in every font |
 | `-h, --help` | Show help |
