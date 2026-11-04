@@ -5,6 +5,7 @@ import { parseArgs, type ParseArgsConfig } from 'util'
 import {
   clock,
   countdown,
+  flow,
   play,
   SHOW_CURSOR,
   typewriter,
@@ -33,6 +34,7 @@ const OPTIONS = {
   gradient: { type: 'string', short: 'g' },
   rainbow: { type: 'boolean' },
   type: { type: 'boolean' },
+  flow: { type: 'boolean' },
   clock: { type: 'boolean' },
   countdown: { type: 'string' },
   random: { type: 'boolean' },
@@ -61,6 +63,7 @@ Color:
 
 Animation:
       --type               Type the text out
+      --flow               Make the rainbow or gradient flow, until ctrl+c
       --clock              Show a live clock
       --countdown <time>   Count down, like 90, 5m, 1h30m or 10:00, then show the text
 
@@ -76,6 +79,7 @@ Text can also be piped in. Defaults can be set in a .echoasciirc file.
 Examples:
   echoascii hello world
   echoascii --font Doom --gradient red,blue --border hello
+  echoascii --type --flow --font 'ANSI Shadow' hello
   echoascii --countdown 5m "Time's up!"
   echo "piped text" | echoascii --center`
 
@@ -125,6 +129,8 @@ const main = async (): Promise<void> => {
   if (COLOR_KEYS.some((key) => values[key] !== undefined)) {
     for (const key of COLOR_KEYS) delete config[key]
   }
+  // A solid color can't flow, so --flow replaces it with the rainbow
+  if (values.flow) delete config.color
   const merged = { ...config, ...values }
   const isTTY = Boolean(process.stdout.isTTY)
 
@@ -146,6 +152,19 @@ const main = async (): Promise<void> => {
   const timer = values.clock || values.countdown !== undefined
   if (values.clock && values.countdown !== undefined) {
     throw new EchoasciiError('Use either --clock or --countdown, not both')
+  }
+  if (values.flow) {
+    if (timer) {
+      throw new EchoasciiError(
+        '--flow works with text, not with --clock or --countdown',
+      )
+    }
+    if (options.color !== undefined) {
+      throw new EchoasciiError(
+        '--flow needs --rainbow or --gradient, not --color',
+      )
+    }
+    if (options.gradient === undefined) options.rainbow = true
   }
 
   // Text comes from the arguments, or stdin when something is piped in
@@ -176,7 +195,8 @@ const main = async (): Promise<void> => {
     options.font = fonts[Math.floor(Math.random() * fonts.length)]
     process.stderr.write(`font: ${options.font}\n`)
   }
-  const banner = new Banner(options)
+  const flowing = Boolean(values.flow) && isTTY
+  const banner = new Banner(options, flowing)
 
   if (values.clock) {
     if (hasText) {
@@ -192,6 +212,15 @@ const main = async (): Promise<void> => {
     await animate(countdown(banner, duration, hasText ? text : undefined))
     if (isTTY) process.stdout.write('\x07')
     return
+  }
+
+  if (flowing) {
+    return animate(
+      (function* () {
+        if (values.type) yield* typewriter(banner, text)
+        yield* flow(banner, text)
+      })(),
+    )
   }
 
   if (values.type && isTTY) return animate(typewriter(banner, text))

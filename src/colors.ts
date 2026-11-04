@@ -144,16 +144,21 @@ export const validateColors = (options: ColorOptions): void => {
 /**
  * `extent` is the area the gradient spans. It defaults to the visible art,
  * animations pass their final size so colors stay put between frames.
+ *
+ * Passing a `phase` makes the colors flow: each step moves the rainbow along,
+ * and a gradient loops back to its first color so it can scroll forever.
  */
 export const colorize = (
   lines: string[],
   options: ColorOptions,
   extent: Bounds | undefined = measure(lines),
+  phase?: number,
 ): string[] => {
   const truecolor = options.truecolor ?? supportsTruecolor()
 
   if (options.rainbow) {
-    return paint(lines, (x, y) => code(rainbowAt(x / 2 + y), truecolor))
+    const shift = phase ?? 0
+    return paint(lines, (x, y) => code(rainbowAt(x / 2 + y - shift), truecolor))
   }
 
   if (options.gradient !== undefined) {
@@ -161,7 +166,14 @@ export const colorize = (
     const stops = parseGradient(options.gradient)
     const { left = 0, right = 1 } = extent ?? {}
     const span = Math.max(1, right - 1 - left)
-    return paint(lines, (x) => code(mix(stops, (x - left) / span), truecolor))
+    if (phase === undefined) {
+      return paint(lines, (x) => code(mix(stops, (x - left) / span), truecolor))
+    }
+    const loop = [...stops, stops[0]!]
+    return paint(lines, (x) => {
+      const t = ((((x - left) / span - phase / 50) % 1) + 1) % 1
+      return code(mix(loop, t), truecolor)
+    })
   }
 
   if (options.color !== undefined) {

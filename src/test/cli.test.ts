@@ -198,6 +198,34 @@ test('--type prints the banner straight away without a terminal', () => {
   assert.strictEqual(art(['--font=Small', '--type', 'hi']), SMALL_HI)
 })
 
+test('--flow prints still colors without a terminal', () => {
+  assert.strictEqual(
+    art(['--font=Small', '--flow', 'hi']),
+    art(['--font=Small', '--rainbow', 'hi']),
+  )
+  assert.strictEqual(
+    art(['--font=Small', '--flow', '-g', 'red,blue', 'hi']),
+    art(['--font=Small', '-g', 'red,blue', 'hi']),
+  )
+
+  const cwd = tempDir()
+  fs.writeFileSync(path.join(cwd, '.echoasciirc'), '{"color": "red"}')
+  assert.strictEqual(
+    art(['--font=Small', '--flow', 'hi'], { cwd }),
+    art(['--font=Small', '--rainbow', 'hi']),
+    '--flow replaces a solid color from config',
+  )
+
+  for (const [args, message] of [
+    [['--flow', '-c', 'red', 'hi'], /needs --rainbow or --gradient/],
+    [['--flow', '--clock'], /not with --clock or --countdown/],
+  ] as const) {
+    const result = run([...args])
+    assert.strictEqual(result.code, 1)
+    assert.match(result.stderr, message)
+  }
+})
+
 test('--countdown counts down, then shows the text', () => {
   const started = Date.now()
   const output = art(['--font=Small', '--countdown', '2', 'Go'])

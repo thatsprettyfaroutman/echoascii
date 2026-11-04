@@ -31,17 +31,30 @@ export const play = async (
   sleep: (ms: number) => Promise<unknown> = wait,
 ): Promise<void> => {
   let height = 0
-  if (screen.isTTY) screen.write(HIDE_CURSOR)
+  // Leave an empty row between the command and the animation
+  if (screen.isTTY) screen.write(HIDE_CURSOR + '\n')
   try {
     for (const frame of frames) {
-      // Move to the start of the previous frame and clear everything below
-      if (screen.isTTY && height) screen.write(`\x1b[${height}F\x1b[J`)
-      screen.write(frame.text + '\n')
+      // Move to the start of the previous frame and clear everything below.
+      // One write per frame, so the terminal never shows a half drawn frame.
+      const back = screen.isTTY && height ? `\x1b[${height}F\x1b[J` : ''
+      screen.write(back + frame.text + '\n')
       height = frame.text.split('\n').length
       if (frame.hold > 0) await sleep(frame.hold)
     }
   } finally {
     if (screen.isTTY) screen.write(SHOW_CURSOR)
+  }
+}
+
+/** Scrolls the colors of a flowing banner along, until stopped */
+export function* flow(
+  banner: Banner,
+  text: string,
+  fps = 20,
+): Generator<Frame> {
+  for (let phase = 0; ; phase++) {
+    yield { text: banner.render(text, phase), hold: 1000 / fps }
   }
 }
 
