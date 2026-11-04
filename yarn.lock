@@ -8,13 +8,19 @@ argparse@^1.0.7:
   dependencies:
     sprintf-js "~1.0.2"
 
+commander@^14.0.0:
+  version "14.0.3"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-14.0.3.tgz#425d79b48f9af82fcd9e4fc1ea8af6c5ec07bbc2"
+
 esprima@^4.0.0:
   version "4.0.1"
   resolved "https://registry.npmjs.org/esprima/-/esprima-4.0.1.tgz"
 
-figlet@1.6.0:
-  version "1.6.0"
-  resolved "https://registry.npmjs.org/figlet/-/figlet-1.6.0.tgz"
+figlet@1.11.3:
+  version "1.11.3"
+  resolved "https://registry.yarnpkg.com/figlet/-/figlet-1.11.3.tgz#9feb8895c373646491e89e5ef99d4097859c465b"
+  dependencies:
+    commander "^14.0.0"
 
 js-yaml@^3.5.5:
   version "3.14.2"
