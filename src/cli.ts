@@ -170,7 +170,9 @@ const main = async (): Promise<void> => {
     width:
       values.width !== undefined
         ? parseWidth(values.width)
-        : (config.width ?? (isTTY ? process.stdout.columns : undefined)),
+        : // One short of the terminal: a line that fills the last column
+          // makes some terminals wrap, and animations would drift down
+          (config.width ?? (isTTY ? process.stdout.columns - 1 : undefined)),
     center: merged.center,
     border: merged.border,
     trim: merged.trim,

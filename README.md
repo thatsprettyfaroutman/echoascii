@@ -8,9 +8,19 @@
 
 <br>
 
+![echoascii --decode --rainbow --font 'ANSI Shadow' hello](docs/recordings/decode.gif)
+
 ![echoascii --type --gradient cyan,magenta 'hello there'](docs/recordings/type.gif)
 
 ![echoascii --pick --gradient cyan,magenta hello](docs/recordings/pick.gif)
+
+![echoascii --snow --center --font 'ANSI Shadow' --color white 'let it snow'](docs/recordings/snow.gif)
+
+![echoascii --rain --center --gradient cyan,blue --font Doom 'rainy day'](docs/recordings/rain.gif)
+
+![echoascii --fall --wave --rainbow hello](docs/recordings/fall.gif)
+
+![echoascii --marquee --rainbow --font Doom 'breaking news: echoascii can scroll'](docs/recordings/marquee.gif)
 
 ![echoascii --clock --center --font 'ANSI Shadow' --gradient cyan,magenta](docs/recordings/clock.gif)
 
