@@ -1,6 +1,7 @@
 {
   "name": "echoascii",
   "version": "2.0.0",
+  "description": "Turn any text into big ASCII art banners in your terminal, with 330+ bundled FIGlet fonts 😱",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
@@ -19,7 +20,12 @@
     "url": "https://github.com/thatsprettyfaroutman/echoascii"
   },
   "keywords": [
-    "ascii"
+    "ascii",
+    "ascii-art",
+    "figlet",
+    "banner",
+    "cli",
+    "terminal"
   ],
   "author": {
     "name": "Viljami Anttonen",
