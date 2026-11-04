@@ -1,13 +1,16 @@
 {
   "name": "echoascii",
-  "version": "1.2.4",
+  "version": "2.0.0",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "figlet": "1.6.0",
+    "figlet": "1.12.0",
     "loadrc": "1.0.0"
   },
   "bin": "bin/echoascii.js",
+  "engines": {
+    "node": ">=17"
+  },
   "scripts": {
     "start": "node ./bin/echoascii.js --font='Larry 3D' hello world --font='Small' oomg \n line break"
   },
