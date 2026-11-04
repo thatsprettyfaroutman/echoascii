@@ -1,25 +1,18 @@
 # Run with: npm run record
 Output docs/recordings/title.gif
 
-Require node
-
-Set Shell "bash"
 Set FontSize 16
-Set Width 900
-Set Height 232
-Set Padding 24
+Set Height 210
+# Framerate 15 keeps the flowing rainbow under 1 MB
 Set Framerate 15
-Set Theme "Catppuccin Mocha"
-Env COLORTERM "truecolor"
+Source docs/recordings/shared/style.tape
 
-# Render the frames, then start recording once the screen is clear
+# Just the banner, without the command: clear the screen and hide the cursor,
+# then start recording while it waits a moment
 Hide
-Type "source docs/recordings/title.sh"
+Type `clear; printf '\e[?25l'; sleep 0.5; node dist/cli.js --type --flow --center --font 'ANSI Shadow' echoascii`
 Enter
-Sleep 5s
-Type "title"
-Enter
-Sleep 300ms
+Sleep 250ms
 Show
 
-Sleep 4.6s
+Sleep 3.7s

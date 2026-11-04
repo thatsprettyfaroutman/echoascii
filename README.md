@@ -1,6 +1,12 @@
-![echoascii, spinning through fonts and landing on a flowing rainbow](docs/recordings/title.gif)
+![echoascii, typed out in flowing rainbow colors](docs/recordings/title.gif)
 
-Turn any text into big ASCII art banners in your terminal, with 330+ bundled FIGlet fonts 😱
+<h3 align="center">Turn any text into big ASCII art banners in your terminal 😱</h3>
+
+<p align="center">
+  330+ FIGlet fonts&ensp;·&ensp;colors and gradients&ensp;·&ensp;typewriter, clock and countdown animations&ensp;·&ensp;works offline
+</p>
+
+<br>
 
 ![echoascii --type --gradient cyan,magenta 'hello there'](docs/recordings/type.gif)
 
@@ -8,58 +14,36 @@ Turn any text into big ASCII art banners in your terminal, with 330+ bundled FIG
 
 ![echoascii --countdown 5 --border --gradient yellow,red "Time's up!"](docs/recordings/countdown.gif)
 
-## Try it
+## Install
 
 ```
-$ npx echoascii hello
-
- __              ___    ___
-/\ \            /\_ \  /\_ \
-\ \ \___      __\//\ \ \//\ \     ___
- \ \  _ `\  /'__`\\ \ \  \ \ \   / __`\
-  \ \ \ \ \/\  __/ \_\ \_ \_\ \_/\ \L\ \
-   \ \_\ \_\ \____\/\____\/\____\ \____/
-    \/_/\/_/\/____/\/____/\/____/\/___/
+npm i -g echoascii
 ```
 
-```
-$ npx echoascii --font 'ANSI Shadow' hi there
-
-██╗  ██╗██╗    ████████╗██╗  ██╗███████╗██████╗ ███████╗
-██║  ██║██║    ╚══██╔══╝██║  ██║██╔════╝██╔══██╗██╔════╝
-███████║██║       ██║   ███████║█████╗  ██████╔╝█████╗
-██╔══██║██║       ██║   ██╔══██║██╔══╝  ██╔══██╗██╔══╝
-██║  ██║██║       ██║   ██║  ██║███████╗██║  ██║███████╗
-╚═╝  ╚═╝╚═╝       ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝
-```
+Or try it without installing:
 
 ```
-$ npx echoascii --font Small --border --rows hello world
-
-┌─────────────────────────┐
-│  _        _ _           │
-│ | |_  ___| | |___       │
-│ | ' \/ -_) | / _ \      │
-│ |_||_\___|_|_\___/   _  │
-│ __ __ _____ _ _| |__| | │
-│ \ V  V / _ \ '_| / _` | │
-│  \_/\_/\___/_| |_\__,_| │
-└─────────────────────────┘
+npx echoascii hello
 ```
 
-More things to try:
+You can also add it to a project with `npm i echoascii`. Requires Node.js 18.3 or newer.
+
+## Usage
 
 ```
-npx echoascii --gradient red,blue hello        # smooth color gradient
-npx echoascii --rainbow --center hello         # rainbow, centered in the terminal
-npx echoascii --type "hello there"             # typewriter animation
-npx echoascii --flow --font 'ANSI Shadow' hi   # flowing rainbow, ctrl+c to stop
-npx echoascii --clock                          # big live clock, ctrl+c to stop
-npx echoascii --countdown 5m "Time's up!"      # countdown, then a message
-npx echoascii --markdown hello                 # a code block to paste into a README
-npx echoascii --random hello                   # surprise font
-npx echoascii --list-fonts hello | less        # your text in every font
-git branch --show-current | npx echoascii      # pipe text in
+echoascii hello                              # big text in the default font
+echoascii --font 'ANSI Shadow' hi there      # pick from 330+ fonts
+echoascii --rows 'first row' 'second row'    # one row per argument
+echoascii --center --border hello            # center it and draw a box around it
+echoascii --gradient red,blue hello          # smooth color gradient
+echoascii --rainbow hello                    # rainbow colors
+echoascii --type --flow hello                # type it out, then make the colors flow
+echoascii --clock                            # big live clock, ctrl+c to stop
+echoascii --countdown 5m "Time's up!"        # countdown, then a message
+echoascii --markdown hello                   # a code block to paste into a README
+echoascii --random hello                     # surprise font
+echoascii --list-fonts hello | less          # your text in every font
+git branch --show-current | echoascii        # pipe text in
 ```
 
 ## Options
@@ -86,14 +70,6 @@ git branch --show-current | npx echoascii      # pipe text in
 | `-v, --version` | Show the version |
 
 Gradients and hex colors use 24-bit color when `$COLORTERM` says the terminal supports it, and the closest of 256 colors otherwise. The animations only play in a terminal: piped elsewhere, `--type` and `--flow` print the banner, `--clock` prints the time once and `--countdown` prints each second.
-
-## Install
-
-```
-npm i -g echoascii
-```
-
-or add it to a project with `npm i echoascii`. Requires Node.js 18.3 or newer.
 
 ## Use it from JavaScript or TypeScript
 

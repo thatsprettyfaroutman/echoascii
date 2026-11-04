@@ -8,6 +8,8 @@ import {
   HIDE_CURSOR,
   play,
   SHOW_CURSOR,
+  SYNC_END,
+  SYNC_START,
   typewriter,
   type Frame,
 } from '../animate'
@@ -136,7 +138,12 @@ test('play redraws frames in place in a terminal', async () => {
   await play(frames, tty)
   assert.strictEqual(
     tty.output,
-    `${HIDE_CURSOR}\none\none\n\x1b[2F\x1b[Jtwo\n${SHOW_CURSOR}`,
+    HIDE_CURSOR +
+      '\n' +
+      `${SYNC_START}one\x1b[K\none\x1b[K\n\x1b[J${SYNC_END}` +
+      // Back up two lines and draw over them, never clearing them first
+      `${SYNC_START}\x1b[2Ftwo\x1b[K\n\x1b[J${SYNC_END}` +
+      SHOW_CURSOR,
   )
 
   const pipe = screen(false)

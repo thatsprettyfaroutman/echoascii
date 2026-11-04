@@ -1,16 +1,9 @@
 # Run with: npm run record
 Output docs/recordings/clock.gif
 
-Require node
-
-Set Shell "bash"
 Set FontSize 18
-Set Width 1080
 Set Height 290
-Set Padding 24
-Set Theme "Catppuccin Mocha"
-Set TypingSpeed 45ms
-Env COLORTERM "truecolor"
+Source docs/recordings/shared/style.tape
 
 # Use this checkout's build
 Hide
