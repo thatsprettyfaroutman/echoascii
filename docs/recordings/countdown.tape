@@ -1,16 +1,10 @@
 # Run with: npm run record
 Output docs/recordings/countdown.gif
 
-Require node
-
-Set Shell "bash"
 Set FontSize 18
 Set Width 960
 Set Height 380
-Set Padding 24
-Set Theme "Catppuccin Mocha"
-Set TypingSpeed 45ms
-Env COLORTERM "truecolor"
+Source docs/recordings/shared/style.tape
 
 # Use this checkout's build
 Hide
