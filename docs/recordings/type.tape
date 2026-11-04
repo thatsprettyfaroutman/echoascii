@@ -2,7 +2,6 @@
 Output docs/recordings/type.gif
 
 Set FontSize 18
-Set Width 1080
 Set Height 330
 Source docs/recordings/shared/style.tape
 

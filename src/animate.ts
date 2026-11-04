@@ -14,6 +14,10 @@ export interface Screen {
 
 export const HIDE_CURSOR = '\x1b[?25l'
 export const SHOW_CURSOR = '\x1b[?25h'
+// Terminals that support synchronized output show everything between these
+// at once, the rest ignore them
+export const SYNC_START = '\x1b[?2026h'
+export const SYNC_END = '\x1b[?2026l'
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -35,11 +39,18 @@ export const play = async (
   if (screen.isTTY) screen.write(HIDE_CURSOR + '\n')
   try {
     for (const frame of frames) {
-      // Move to the start of the previous frame and clear everything below.
-      // One write per frame, so the terminal never shows a half drawn frame.
-      const back = screen.isTTY && height ? `\x1b[${height}F\x1b[J` : ''
-      screen.write(back + frame.text + '\n')
-      height = frame.text.split('\n').length
+      const lines = frame.text.split('\n')
+      if (screen.isTTY) {
+        // Draw over the previous frame line by line instead of clearing it
+        // first, so a frame that arrives in pieces never blinks. Then clear
+        // whatever is left below, in case the new frame is shorter.
+        const back = height ? `\x1b[${height}F` : ''
+        const body = lines.map((line) => line + '\x1b[K').join('\n')
+        screen.write(SYNC_START + back + body + '\n\x1b[J' + SYNC_END)
+      } else {
+        screen.write(frame.text + '\n')
+      }
+      height = lines.length
       if (frame.hold > 0) await sleep(frame.hold)
     }
   } finally {

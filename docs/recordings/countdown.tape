@@ -2,7 +2,6 @@
 Output docs/recordings/countdown.gif
 
 Set FontSize 18
-Set Width 960
 Set Height 380
 Source docs/recordings/shared/style.tape
 

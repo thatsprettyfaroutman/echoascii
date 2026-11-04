@@ -1,6 +1,12 @@
 ![echoascii, typed out in flowing rainbow colors](docs/recordings/title.gif)
 
-Turn any text into big ASCII art banners in your terminal, with 330+ bundled FIGlet fonts 😱
+<h3 align="center">Turn any text into big ASCII art banners in your terminal 😱</h3>
+
+<p align="center">
+  330+ FIGlet fonts&ensp;·&ensp;colors and gradients&ensp;·&ensp;typewriter, clock and countdown animations&ensp;·&ensp;works offline
+</p>
+
+<br>
 
 ![echoascii --type --gradient cyan,magenta 'hello there'](docs/recordings/type.gif)
 

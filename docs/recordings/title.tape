@@ -2,7 +2,6 @@
 Output docs/recordings/title.gif
 
 Set FontSize 16
-Set Width 900
 Set Height 210
 # Framerate 15 keeps the flowing rainbow under 1 MB
 Set Framerate 15
@@ -16,4 +15,4 @@ Enter
 Sleep 250ms
 Show
 
-Sleep 4s
+Sleep 3.7s
