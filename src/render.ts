@@ -38,6 +38,7 @@ export class Banner {
   readonly font: string
   private readonly options: RenderOptions
   private bounds: Bounds | undefined
+  private extent: Bounds | undefined
 
   constructor(options: RenderOptions = {}) {
     const { width } = options
@@ -92,7 +93,10 @@ export class Banner {
     }
 
     if (fenced) return markdown(lines).join('\n')
-    return colorize(lines, this.options).join('\n')
+    // Keep gradients spread over everything drawn so far, so a letter keeps
+    // its color while the rest is typed out
+    this.extent = union(this.extent, measure(lines))
+    return colorize(lines, this.options, this.extent).join('\n')
   }
 
   private artWidth(lines: string[], trim: boolean): number {

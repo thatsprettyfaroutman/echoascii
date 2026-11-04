@@ -31,7 +31,8 @@
     "build": "tsc",
     "prepare": "npm run build",
     "test": "npm run build && node --test dist/test/*.test.js",
-    "start": "npm run build && node dist/cli.js hello world"
+    "start": "npm run build && node dist/cli.js hello world",
+    "record": "npm run build && for tape in docs/recordings/*.tape; do vhs \"$tape\"; done"
   },
   "repository": {
     "type": "git",

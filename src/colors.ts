@@ -1,5 +1,5 @@
 import { EchoasciiError } from './errors'
-import { measure } from './layout'
+import { measure, type Bounds } from './layout'
 
 export const COLOR_NAMES = [
   'red',
@@ -141,7 +141,15 @@ export const validateColors = (options: ColorOptions): void => {
   if (options.gradient !== undefined) parseGradient(options.gradient)
 }
 
-export const colorize = (lines: string[], options: ColorOptions): string[] => {
+/**
+ * `extent` is the area the gradient spans. It defaults to the visible art,
+ * animations pass their final size so colors stay put between frames.
+ */
+export const colorize = (
+  lines: string[],
+  options: ColorOptions,
+  extent: Bounds | undefined = measure(lines),
+): string[] => {
   const truecolor = options.truecolor ?? supportsTruecolor()
 
   if (options.rainbow) {
@@ -151,7 +159,7 @@ export const colorize = (lines: string[], options: ColorOptions): string[] => {
   if (options.gradient !== undefined) {
     // Run from the first visible column to the last, ignoring padding
     const stops = parseGradient(options.gradient)
-    const { left = 0, right = 1 } = measure(lines) ?? {}
+    const { left = 0, right = 1 } = extent ?? {}
     const span = Math.max(1, right - 1 - left)
     return paint(lines, (x) => code(mix(stops, (x - left) / span), truecolor))
   }
