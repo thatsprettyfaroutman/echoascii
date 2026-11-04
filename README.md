@@ -63,6 +63,20 @@ npx echoascii --list-fonts hello | less        # your text in every font
 git branch --show-current | npx echoascii      # pipe text in
 ```
 
+## Animations
+
+`--type` types the text out:
+
+![echoascii --type --gradient cyan,magenta 'hello there'](docs/recordings/type.gif)
+
+`--clock` shows a live clock until you press ctrl+c:
+
+![echoascii --clock --center --font 'ANSI Shadow' --gradient cyan,magenta](docs/recordings/clock.gif)
+
+`--countdown` counts down, then shows your text:
+
+![echoascii --countdown 5 --border --gradient yellow,red "Time's up!"](docs/recordings/countdown.gif)
+
 ## Options
 
 | Option | Description |
