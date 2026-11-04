@@ -1,14 +1,12 @@
-```
-             __
-            /\ \                                       __  __
-   __    ___\ \ \___     ___      __      ____    ___ /\_\/\_\
- /'__`\ /'___\ \  _ `\  / __`\  /'__`\   /',__\  /'___\/\ \/\ \
-/\  __//\ \__/\ \ \ \ \/\ \L\ \/\ \L\.\_/\__, `\/\ \__/\ \ \ \ \
-\ \____\ \____\\ \_\ \_\ \____/\ \__/.\_\/\____/\ \____\\ \_\ \_\
- \/____/\/____/ \/_/\/_/\/___/  \/__/\/_/\/___/  \/____/ \/_/\/_/
-```
+![echoascii, spinning through fonts and landing on a flowing rainbow](docs/recordings/title.gif)
 
 Turn any text into big ASCII art banners in your terminal, with 330+ bundled FIGlet fonts 😱
+
+![echoascii --type --gradient cyan,magenta 'hello there'](docs/recordings/type.gif)
+
+![echoascii --clock --center --font 'ANSI Shadow' --gradient cyan,magenta](docs/recordings/clock.gif)
+
+![echoascii --countdown 5 --border --gradient yellow,red "Time's up!"](docs/recordings/countdown.gif)
 
 ## Try it
 
@@ -55,6 +53,7 @@ More things to try:
 npx echoascii --gradient red,blue hello        # smooth color gradient
 npx echoascii --rainbow --center hello         # rainbow, centered in the terminal
 npx echoascii --type "hello there"             # typewriter animation
+npx echoascii --flow --font 'ANSI Shadow' hi   # flowing rainbow, ctrl+c to stop
 npx echoascii --clock                          # big live clock, ctrl+c to stop
 npx echoascii --countdown 5m "Time's up!"      # countdown, then a message
 npx echoascii --markdown hello                 # a code block to paste into a README
@@ -62,20 +61,6 @@ npx echoascii --random hello                   # surprise font
 npx echoascii --list-fonts hello | less        # your text in every font
 git branch --show-current | npx echoascii      # pipe text in
 ```
-
-## Animations
-
-`--type` types the text out:
-
-![echoascii --type --gradient cyan,magenta 'hello there'](docs/recordings/type.gif)
-
-`--clock` shows a live clock until you press ctrl+c:
-
-![echoascii --clock --center --font 'ANSI Shadow' --gradient cyan,magenta](docs/recordings/clock.gif)
-
-`--countdown` counts down, then shows your text:
-
-![echoascii --countdown 5 --border --gradient yellow,red "Time's up!"](docs/recordings/countdown.gif)
 
 ## Options
 
@@ -92,6 +77,7 @@ git branch --show-current | npx echoascii      # pipe text in
 | `-g, --gradient <colors>` | Two or more colors, like `red,blue` or `ff8800,8800ff` |
 | `--rainbow` | Rainbow colors |
 | `--type` | Type the text out like a typewriter |
+| `--flow` | Make the rainbow or gradient flow, until ctrl+c. Uses the rainbow unless there's a gradient. |
 | `--clock` | Show a live clock |
 | `--countdown <time>` | Count down from `90`, `90s`, `5m`, `1h30m` or `10:00`, then show the text |
 | `--random` | Use a random font. Its name is printed to stderr. |
@@ -99,7 +85,7 @@ git branch --show-current | npx echoascii      # pipe text in
 | `-h, --help` | Show help |
 | `-v, --version` | Show the version |
 
-Gradients and hex colors use 24-bit color when `$COLORTERM` says the terminal supports it, and the closest of 256 colors otherwise. The animations only play in a terminal: piped elsewhere, `--type` prints the banner, `--clock` prints the time once and `--countdown` prints each second.
+Gradients and hex colors use 24-bit color when `$COLORTERM` says the terminal supports it, and the closest of 256 colors otherwise. The animations only play in a terminal: piped elsewhere, `--type` and `--flow` print the banner, `--clock` prints the time once and `--countdown` prints each second.
 
 ## Install
 
