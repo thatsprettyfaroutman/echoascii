@@ -5,7 +5,9 @@ import { parseArgs, type ParseArgsConfig } from 'util'
 import {
   clock,
   countdown,
-  flow,
+  decode,
+  fall,
+  loop,
   play,
   SHOW_CURSOR,
   typewriter,
@@ -16,7 +18,7 @@ import { loadConfig } from './config'
 import { EchoasciiError } from './errors'
 import { DEFAULT_FONT, listFonts } from './fonts'
 import { pick, pickedCommand } from './picker'
-import { Banner, type RenderOptions } from './render'
+import { Banner, fitFont, type RenderOptions } from './render'
 import { formatClock, parseDuration } from './time'
 
 const { version } = JSON.parse(
@@ -25,17 +27,27 @@ const { version } = JSON.parse(
 
 const OPTIONS = {
   font: { type: 'string', short: 'f' },
+  fit: { type: 'boolean' },
   rows: { type: 'boolean' },
   width: { type: 'string', short: 'w' },
   center: { type: 'boolean' },
   border: { type: 'boolean' },
+  shadow: { type: 'boolean' },
+  fill: { type: 'string' },
   trim: { type: 'boolean' },
   markdown: { type: 'boolean' },
+  comment: { type: 'string' },
   color: { type: 'string', short: 'c' },
   gradient: { type: 'string', short: 'g' },
   rainbow: { type: 'boolean' },
   type: { type: 'boolean' },
+  decode: { type: 'boolean' },
+  fall: { type: 'boolean' },
   flow: { type: 'boolean' },
+  wave: { type: 'boolean' },
+  marquee: { type: 'boolean' },
+  rain: { type: 'boolean' },
+  snow: { type: 'boolean' },
   clock: { type: 'boolean' },
   countdown: { type: 'string' },
   pick: { type: 'boolean', short: 'p' },
@@ -48,24 +60,35 @@ const OPTIONS = {
 const HELP = `Usage: echoascii [options] <text...>
 
 Text:
-  -f, --font <name>        Font to use (default: "${DEFAULT_FONT}")
+  -f, --font <name|file>   Font name, or a .flf font file (default: "${DEFAULT_FONT}")
+      --fit                Use the biggest font that fits the width
       --rows               Put each argument on its own row
   -w, --width <cols>       Wrap at this many columns (default: terminal width)
 
-Layout:
+Look:
       --center             Center in the terminal
       --border             Draw a box around the banner
+      --shadow             Add a drop shadow
+      --fill <chars>       Draw the letters with these characters, like # or your text
       --trim               Remove the blank space around the banner
       --markdown           Wrap in a markdown code block, for READMEs
+      --comment <lang>     Wrap in code comments, like js, py, sh, css or html
 
 Color:
   -c, --color <color>      A color name, or a hex color like ff8800
   -g, --gradient <colors>  Two or more colors, like red,blue
       --rainbow            Rainbow colors
 
-Animation:
+Animation, starting with one of:
       --type               Type the text out
-      --flow               Make the rainbow or gradient flow, until ctrl+c
+      --decode             Random characters that settle into the text
+      --fall               Letters drop in from the top
+and then any of these, until ctrl+c:
+      --flow               Make the rainbow or gradient flow
+      --wave               Letters bob up and down
+      --marquee            Scroll the text sideways across the terminal
+      --rain, --snow       Weather around the banner
+Or on their own:
       --clock              Show a live clock
       --countdown <time>   Count down, like 90, 5m, 1h30m or 10:00, then show the text
 
@@ -83,6 +106,8 @@ Examples:
   echoascii hello world
   echoascii --font Doom --gradient red,blue --border hello
   echoascii --type --flow --font 'ANSI Shadow' hello
+  echoascii --decode --wave --rainbow --font Doom hello
+  echoascii --comment js --font Small "Section"
   echoascii --countdown 5m "Time's up!"
   echo "piped text" | echoascii --center`
 
@@ -139,6 +164,9 @@ const main = async (): Promise<void> => {
 
   const options: RenderOptions = {
     font: merged.font,
+    fill: merged.fill,
+    shadow: merged.shadow,
+    comment: merged.comment,
     width:
       values.width !== undefined
         ? parseWidth(values.width)
@@ -156,6 +184,36 @@ const main = async (): Promise<void> => {
   if (values.clock && values.countdown !== undefined) {
     throw new EchoasciiError('Use either --clock or --countdown, not both')
   }
+  const intros = (['type', 'decode', 'fall'] as const).filter(
+    (name) => values[name],
+  )
+  const loops = (['wave', 'marquee', 'rain', 'snow'] as const).filter(
+    (name) => values[name],
+  )
+  if (intros.length > 1) {
+    throw new EchoasciiError('Use only one of --type, --decode and --fall')
+  }
+  if (values.rain && values.snow) {
+    throw new EchoasciiError('Use either --rain or --snow, not both')
+  }
+  if (timer && (intros.length || loops.length)) {
+    throw new EchoasciiError(
+      "--clock and --countdown can't be combined with other animations, except --flow",
+    )
+  }
+  if (values.marquee && intros.length) {
+    throw new EchoasciiError(`--marquee can't follow --${intros[0]}`)
+  }
+  if (merged.fit && merged.random) {
+    throw new EchoasciiError('Use either --fit or --random, not both')
+  }
+  // The marquee scrolls the whole line instead of wrapping or centering it
+  const columns = options.width ?? 80
+  if (values.marquee) {
+    options.width = undefined
+    options.center = false
+  }
+
   if (values.pick && timer) {
     throw new EchoasciiError(
       "--pick shows text, it can't be combined with --clock or --countdown",
@@ -220,6 +278,10 @@ const main = async (): Promise<void> => {
     options.font = fonts[Math.floor(Math.random() * fonts.length)]
     process.stderr.write(`font: ${options.font}\n`)
   }
+  if (merged.fit) {
+    options.font = fitFont(timer ? '00:00:00' : text, options, columns)
+    process.stderr.write(`font: ${options.font}\n`)
+  }
   const flowing = Boolean(values.flow) && isTTY
   const banner = new Banner(options, flowing)
 
@@ -239,16 +301,27 @@ const main = async (): Promise<void> => {
     return
   }
 
-  if (flowing) {
+  // An intro plays once, then the loops run together until ctrl+c. Without a
+  // terminal to animate in, the banner is just printed.
+  if (isTTY && (intros.length || loops.length || flowing)) {
     return animate(
       (function* () {
         if (values.type) yield* typewriter(banner, text)
-        yield* flow(banner, text)
+        if (values.decode) yield* decode(banner, text)
+        if (values.fall) yield* fall(banner, text)
+        if (loops.length || flowing) {
+          yield* loop(banner, text, {
+            flow: flowing,
+            wave: values.wave,
+            marquee: values.marquee,
+            rain: values.rain,
+            snow: values.snow,
+            columns,
+          })
+        }
       })(),
     )
   }
-
-  if (values.type && isTTY) return animate(typewriter(banner, text))
 
   print(banner.render(text))
 }

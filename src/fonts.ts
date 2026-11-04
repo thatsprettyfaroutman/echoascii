@@ -1,4 +1,6 @@
-import figlet from 'figlet'
+import figlet, { type FontName } from 'figlet'
+import fs from 'fs'
+import path from 'path'
 import { EchoasciiError } from './errors'
 
 // Only ever use the fonts bundled with figlet, never fetch them
@@ -59,7 +61,34 @@ export const suggestFonts = (
     .map(({ font }) => font)
 }
 
+// Font files are read once and registered under their full path
+const files = new Set<string>()
+
+const isFontFile = (name: string) =>
+  /\.[ft]lf$/i.test(name) || name.includes('/') || name.includes('\\')
+
+const loadFontFile = (name: string): string => {
+  const file = path.resolve(name)
+  if (files.has(file)) return file
+  let data: string
+  try {
+    data = fs.readFileSync(file, 'utf8')
+  } catch (error) {
+    throw new EchoasciiError(
+      `Could not read the font file ${name}: ${(error as Error).message}`,
+    )
+  }
+  try {
+    figlet.parseFont(file as FontName, data)
+  } catch {
+    throw new EchoasciiError(`${name} isn't a FIGlet font`)
+  }
+  files.add(file)
+  return file
+}
+
 export const resolveFont = (name: string): string => {
+  if (isFontFile(name)) return loadFontFile(name)
   const font = findFont(name, listFonts())
   if (font) return font
   const suggestions = suggestFonts(name, listFonts()).map((s) => `"${s}"`)

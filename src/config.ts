@@ -8,6 +8,7 @@ const RC_FILES = ['.echoasciirc', '.echoasciirc.json']
 // Config keys and their types, same names as the long CLI flags
 const SCHEMA = {
   font: 'string',
+  fit: 'boolean',
   rows: 'boolean',
   width: 'number',
   color: 'string',
@@ -16,7 +17,10 @@ const SCHEMA = {
   center: 'boolean',
   trim: 'boolean',
   border: 'boolean',
+  shadow: 'boolean',
+  fill: 'string',
   markdown: 'boolean',
+  comment: 'string',
   random: 'boolean',
 } as const
 
