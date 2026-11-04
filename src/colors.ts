@@ -1,4 +1,5 @@
 import { EchoasciiError } from './errors'
+import { SPECIALS, withoutSpecials } from './cells'
 import { measure, type Bounds } from './layout'
 
 export const COLOR_NAMES = [
@@ -98,20 +99,25 @@ const code = ([r, g, b]: Rgb, truecolor: boolean): string => {
   return `\x1b[38;5;${16 + 36 * level(r) + 6 * level(g) + level(b)}m`
 }
 
-// Colors each non-space character, only emitting a code when it changes
-const paint = (lines: string[], colorAt: (x: number, y: number) => string) =>
+// Colors each character, only emitting a code when it changes. Without a
+// color function characters keep the terminal's own color. Placeholders for
+// shadows, rain and snow always get their own color.
+const paint = (lines: string[], colorAt?: (x: number, y: number) => string) =>
   lines.map((line, y) => {
     let output = ''
-    let current: string | undefined
+    let current = ''
     for (const [x, char] of [...line].entries()) {
-      if (char !== ' ') {
-        const next = colorAt(x, y)
-        if (next !== current) output += next
-        current = next
+      if (char === ' ') {
+        output += char
+        continue
       }
-      output += char
+      const special = SPECIALS[char]
+      const next = special ? special.code : colorAt ? colorAt(x, y) : ''
+      if (next !== current) output += next || RESET
+      current = next
+      output += special ? special.char : char
     }
-    return current === undefined ? output : output + RESET
+    return current ? output + RESET : output
   })
 
 // Three phase-shifted sine waves, like lolcat, running diagonally
@@ -141,24 +147,40 @@ export const validateColors = (options: ColorOptions): void => {
   if (options.gradient !== undefined) parseGradient(options.gradient)
 }
 
+export interface PaintOptions {
+  /** The area a gradient spans. Defaults to the visible art. */
+  extent?: Bounds
+  /** Makes the colors flow: each step moves the rainbow or gradient along */
+  phase?: number
+  /** Where these lines sit in the art, so colors move with scrolled text */
+  origin?: { x: number; y: number }
+}
+
 /**
- * `extent` is the area the gradient spans. It defaults to the visible art,
- * animations pass their final size so colors stay put between frames.
- *
- * Passing a `phase` makes the colors flow: each step moves the rainbow along,
- * and a gradient loops back to its first color so it can scroll forever.
+ * Paints the lines. Animations pass their final `extent` so colors stay put
+ * between frames. A flowing gradient loops back to its first color, so it can
+ * scroll forever.
  */
 export const colorize = (
   lines: string[],
   options: ColorOptions,
-  extent: Bounds | undefined = measure(lines),
-  phase?: number,
+  {
+    extent = measure(lines.map(withoutSpecials)),
+    phase,
+    origin = { x: 0, y: 0 },
+  }: PaintOptions = {},
 ): string[] => {
   const truecolor = options.truecolor ?? supportsTruecolor()
+  const at =
+    (colorAt: (x: number, y: number) => string) => (x: number, y: number) =>
+      colorAt(x + origin.x, y + origin.y)
 
   if (options.rainbow) {
     const shift = phase ?? 0
-    return paint(lines, (x, y) => code(rainbowAt(x / 2 + y - shift), truecolor))
+    return paint(
+      lines,
+      at((x, y) => code(rainbowAt(x / 2 + y - shift), truecolor)),
+    )
   }
 
   if (options.gradient !== undefined) {
@@ -167,13 +189,19 @@ export const colorize = (
     const { left = 0, right = 1 } = extent ?? {}
     const span = Math.max(1, right - 1 - left)
     if (phase === undefined) {
-      return paint(lines, (x) => code(mix(stops, (x - left) / span), truecolor))
+      return paint(
+        lines,
+        at((x) => code(mix(stops, (x - left) / span), truecolor)),
+      )
     }
     const loop = [...stops, stops[0]!]
-    return paint(lines, (x) => {
-      const t = ((((x - left) / span - phase / 50) % 1) + 1) % 1
-      return code(mix(loop, t), truecolor)
-    })
+    return paint(
+      lines,
+      at((x) => {
+        const t = ((((x - left) / span - phase / 50) % 1) + 1) % 1
+        return code(mix(loop, t), truecolor)
+      }),
+    )
   }
 
   if (options.color !== undefined) {
@@ -181,8 +209,8 @@ export const colorize = (
     const start = isColorName(name)
       ? `\x1b[${ANSI[name]}m`
       : code(parseColor(name), truecolor)
-    return lines.map((line) => (line.trim() ? start + line + RESET : line))
+    return paint(lines, () => start)
   }
 
-  return lines
+  return paint(lines)
 }
