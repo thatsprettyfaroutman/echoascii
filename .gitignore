@@ -9,3 +9,4 @@ dist
 .jshintignore
 .cache
 .yarn
+*.tgz

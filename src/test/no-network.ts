@@ -1,13 +1,15 @@
 // Preloaded into every CLI run in the tests: any network access crashes it.
 // Socket#connect covers net, tls, http, https and http2 at once.
-const dgram = require('dgram')
-const dns = require('dns')
-const net = require('net')
+import dgram from 'dgram'
+import dns from 'dns'
+import net from 'net'
 
-const block = (object, key, name) => {
-  object[key] = () => {
-    throw new Error(`echoascii tried to use the network (${name})`)
-  }
+const block = (object: object, key: string, name: string) => {
+  Object.defineProperty(object, key, {
+    value: () => {
+      throw new Error(`echoascii tried to use the network (${name})`)
+    },
+  })
 }
 
 block(globalThis, 'fetch', 'fetch')

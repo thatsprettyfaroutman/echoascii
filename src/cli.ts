@@ -1,0 +1,221 @@
+#!/usr/bin/env node
+import fs from 'fs'
+import path from 'path'
+import { parseArgs, type ParseArgsConfig } from 'util'
+import {
+  clock,
+  countdown,
+  play,
+  SHOW_CURSOR,
+  typewriter,
+  type Frame,
+} from './animate'
+import { COLOR_NAMES } from './colors'
+import { loadConfig } from './config'
+import { EchoasciiError } from './errors'
+import { DEFAULT_FONT, listFonts } from './fonts'
+import { Banner, type RenderOptions } from './render'
+import { formatClock, parseDuration } from './time'
+
+const { version } = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'),
+) as { version: string }
+
+const OPTIONS = {
+  font: { type: 'string', short: 'f' },
+  rows: { type: 'boolean' },
+  width: { type: 'string', short: 'w' },
+  center: { type: 'boolean' },
+  border: { type: 'boolean' },
+  trim: { type: 'boolean' },
+  markdown: { type: 'boolean' },
+  color: { type: 'string', short: 'c' },
+  gradient: { type: 'string', short: 'g' },
+  rainbow: { type: 'boolean' },
+  type: { type: 'boolean' },
+  clock: { type: 'boolean' },
+  countdown: { type: 'string' },
+  random: { type: 'boolean' },
+  'list-fonts': { type: 'boolean', short: 'l' },
+  help: { type: 'boolean', short: 'h' },
+  version: { type: 'boolean', short: 'v' },
+} satisfies ParseArgsConfig['options']
+
+const HELP = `Usage: echoascii [options] <text...>
+
+Text:
+  -f, --font <name>        Font to use (default: "${DEFAULT_FONT}")
+      --rows               Put each argument on its own row
+  -w, --width <cols>       Wrap at this many columns (default: terminal width)
+
+Layout:
+      --center             Center in the terminal
+      --border             Draw a box around the banner
+      --trim               Remove the blank space around the banner
+      --markdown           Wrap in a markdown code block, for READMEs
+
+Color:
+  -c, --color <color>      A color name, or a hex color like ff8800
+  -g, --gradient <colors>  Two or more colors, like red,blue
+      --rainbow            Rainbow colors
+
+Animation:
+      --type               Type the text out
+      --clock              Show a live clock
+      --countdown <time>   Count down, like 90, 5m, 1h30m or 10:00, then show the text
+
+Other:
+      --random             Use a random font
+  -l, --list-fonts         List fonts, or preview your text in every font
+  -h, --help               Show this help
+  -v, --version            Show the version
+
+Colors are ${COLOR_NAMES.join(', ')}.
+Text can also be piped in. Defaults can be set in a .echoasciirc file.
+
+Examples:
+  echoascii hello world
+  echoascii --font Doom --gradient red,blue --border hello
+  echoascii --countdown 5m "Time's up!"
+  echo "piped text" | echoascii --center`
+
+const COLOR_KEYS = ['color', 'rainbow', 'gradient'] as const
+
+const print = (text: string) => process.stdout.write(text + '\n')
+
+const readStdin = async (): Promise<string> => {
+  let data = ''
+  for await (const chunk of process.stdin) data += chunk
+  return data
+}
+
+const parseWidth = (value: string): number => {
+  const columns = Number(value)
+  if (!Number.isInteger(columns) || columns < 1) {
+    throw new EchoasciiError(
+      `--width must be a positive whole number, got "${value}"`,
+    )
+  }
+  return columns
+}
+
+const animate = async (frames: Iterable<Frame>): Promise<void> => {
+  const isTTY = Boolean(process.stdout.isTTY)
+  if (isTTY) {
+    // Bring the cursor back when stopped with ctrl+c
+    process.once('SIGINT', () => {
+      process.stdout.write(SHOW_CURSOR + '\n')
+      process.exit(130)
+    })
+  }
+  await play(frames, { isTTY, write: (text) => process.stdout.write(text) })
+}
+
+const main = async (): Promise<void> => {
+  const { values, positionals } = parseArgs({
+    options: OPTIONS,
+    allowPositionals: true,
+  })
+
+  if (values.help) return void print(HELP)
+  if (values.version) return void print(version)
+
+  const config = loadConfig()
+  // A color flag replaces any color setting from the config
+  if (COLOR_KEYS.some((key) => values[key] !== undefined)) {
+    for (const key of COLOR_KEYS) delete config[key]
+  }
+  const merged = { ...config, ...values }
+  const isTTY = Boolean(process.stdout.isTTY)
+
+  const options: RenderOptions = {
+    font: merged.font,
+    width:
+      values.width !== undefined
+        ? parseWidth(values.width)
+        : (config.width ?? (isTTY ? process.stdout.columns : undefined)),
+    center: merged.center,
+    border: merged.border,
+    trim: merged.trim,
+    markdown: merged.markdown,
+    color: merged.color,
+    gradient: merged.gradient,
+    rainbow: merged.rainbow,
+  }
+
+  const timer = values.clock || values.countdown !== undefined
+  if (values.clock && values.countdown !== undefined) {
+    throw new EchoasciiError('Use either --clock or --countdown, not both')
+  }
+
+  // Text comes from the arguments, or stdin when something is piped in
+  let text = ''
+  if (positionals.length) {
+    text = (merged.rows ? positionals : [positionals.join(' ')]).join('\n')
+  } else if (!process.stdin.isTTY && !timer) {
+    text = (await readStdin()).trimEnd()
+  }
+  const hasText = text.trim() !== ''
+
+  if (values['list-fonts']) {
+    if (!hasText) return void print(listFonts().join('\n'))
+    for (const font of listFonts()) {
+      print(`${font}\n${new Banner({ ...options, font }).render(text)}\n`)
+    }
+    return
+  }
+
+  if (!hasText && !timer) {
+    process.stderr.write(HELP + '\n')
+    process.exitCode = 1
+    return
+  }
+
+  if (merged.random) {
+    const fonts = listFonts()
+    options.font = fonts[Math.floor(Math.random() * fonts.length)]
+    process.stderr.write(`font: ${options.font}\n`)
+  }
+  const banner = new Banner(options)
+
+  if (values.clock) {
+    if (hasText) {
+      throw new EchoasciiError('--clock shows the time, so it takes no text')
+    }
+    // Without a terminal to redraw in, print the time once
+    if (!isTTY) return void print(banner.render(formatClock(new Date())))
+    return animate(clock(banner))
+  }
+
+  if (values.countdown !== undefined) {
+    const duration = parseDuration(values.countdown)
+    await animate(countdown(banner, duration, hasText ? text : undefined))
+    if (isTTY) process.stdout.write('\x07')
+    return
+  }
+
+  if (values.type && isTTY) return animate(typewriter(banner, text))
+
+  print(banner.render(text))
+}
+
+// Exit quietly when piped into something that stops reading, like head
+process.stdout.on('error', (error: NodeJS.ErrnoException) => {
+  if (error.code !== 'EPIPE') throw error
+  process.exit(0)
+})
+
+main().catch((error: unknown) => {
+  const code = (error as { code?: unknown })?.code
+  if (typeof code !== 'string') throw error
+  let message = (error as Error).message
+  if (code.startsWith('ERR_PARSE_ARGS')) {
+    message += '\nRun "echoascii --help" to see all options.'
+  } else if (code === 'UNKNOWN_FONT') {
+    message += '\nRun "echoascii --list-fonts" to see them all.'
+  } else if (!(error instanceof EchoasciiError)) {
+    throw error
+  }
+  process.stderr.write(`echoascii: ${message}\n`)
+  process.exitCode = 1
+})
