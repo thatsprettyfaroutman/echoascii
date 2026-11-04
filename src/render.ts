@@ -33,14 +33,16 @@ const DEFAULT_COLUMNS = 80
 /**
  * Renders text with fixed options. Animations reuse one Banner so every
  * frame is laid out in the same box, which keeps borders and centering still.
+ * A `flowing` banner loops its gradient so `render(text, phase)` can scroll it.
  */
 export class Banner {
   readonly font: string
   private readonly options: RenderOptions
+  private readonly flowing: boolean
   private bounds: Bounds | undefined
   private extent: Bounds | undefined
 
-  constructor(options: RenderOptions = {}) {
+  constructor(options: RenderOptions = {}, flowing = false) {
     const { width } = options
     if (width !== undefined && !(Number.isInteger(width) && width > 0)) {
       throw new EchoasciiError(
@@ -50,9 +52,10 @@ export class Banner {
     validateColors(options)
     this.font = resolveFont(options.font ?? DEFAULT_FONT)
     this.options = options
+    this.flowing = flowing
   }
 
-  render(text: string): string {
+  render(text: string, phase = 0): string {
     const { width, border: boxed, markdown: fenced } = this.options
     const trim = Boolean(
       this.options.trim || this.options.center || boxed || fenced,
@@ -96,7 +99,12 @@ export class Banner {
     // Keep gradients spread over everything drawn so far, so a letter keeps
     // its color while the rest is typed out
     this.extent = union(this.extent, measure(lines))
-    return colorize(lines, this.options, this.extent).join('\n')
+    return colorize(
+      lines,
+      this.options,
+      this.extent,
+      this.flowing ? phase : undefined,
+    ).join('\n')
   }
 
   private artWidth(lines: string[], trim: boolean): number {

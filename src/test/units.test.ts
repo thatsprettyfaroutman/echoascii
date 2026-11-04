@@ -4,6 +4,7 @@ import path from 'path'
 import { test } from 'node:test'
 import {
   countdown,
+  flow,
   HIDE_CURSOR,
   play,
   SHOW_CURSOR,
@@ -135,7 +136,7 @@ test('play redraws frames in place in a terminal', async () => {
   await play(frames, tty)
   assert.strictEqual(
     tty.output,
-    `${HIDE_CURSOR}one\none\n\x1b[2F\x1b[Jtwo\n${SHOW_CURSOR}`,
+    `${HIDE_CURSOR}\none\none\n\x1b[2F\x1b[Jtwo\n${SHOW_CURSOR}`,
   )
 
   const pipe = screen(false)
@@ -207,6 +208,29 @@ test('typed letters keep their gradient color as the rest appears', () => {
       assert.strictEqual(color, final.get(position), position)
     }
   }
+})
+
+test('flow scrolls the colors and keeps the text', () => {
+  for (const options of [
+    { rainbow: true },
+    { gradient: 'red,blue', truecolor: true },
+  ]) {
+    const banner = new Banner({ font: 'Small', ...options }, true)
+    const frames = flow(banner, 'hi')
+    const shown = Array.from({ length: 3 }, () => frames.next().value!.text)
+    assert.strictEqual(new Set(shown).size, 3, 'every frame has new colors')
+    for (const text of shown) {
+      assert.strictEqual(
+        stripAnsi(text),
+        new Banner({ font: 'Small' }).render('hi'),
+      )
+    }
+  }
+  // The rainbow starts where a still rainbow is, so typing then flowing is seamless
+  assert.strictEqual(
+    new Banner({ font: 'Small', rainbow: true }, true).render('hi', 0),
+    new Banner({ font: 'Small', rainbow: true }).render('hi'),
+  )
 })
 
 test('loadConfig merges sources in order', () => {
