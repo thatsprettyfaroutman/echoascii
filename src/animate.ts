@@ -263,7 +263,8 @@ export function* loop(
   const artWidth = widest(art)
   const columns = effects.columns ?? 80
   const view = Math.max(1, columns - (banner.options.border ? 4 : 0))
-  const amplitude = effects.wave ? (art.length > 6 ? 2 : 1) : 0
+  // One row up and down, more makes tall fonts hard to read
+  const amplitude = effects.wave ? 1 : 0
   const extent = measure(art.map(withoutSpecials))
   let particles: Particle[] | undefined
 
