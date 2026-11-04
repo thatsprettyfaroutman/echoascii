@@ -15,6 +15,7 @@ import { COLOR_NAMES } from './colors'
 import { loadConfig } from './config'
 import { EchoasciiError } from './errors'
 import { DEFAULT_FONT, listFonts } from './fonts'
+import { pick, pickedCommand } from './picker'
 import { Banner, type RenderOptions } from './render'
 import { formatClock, parseDuration } from './time'
 
@@ -37,6 +38,7 @@ const OPTIONS = {
   flow: { type: 'boolean' },
   clock: { type: 'boolean' },
   countdown: { type: 'string' },
+  pick: { type: 'boolean', short: 'p' },
   random: { type: 'boolean' },
   'list-fonts': { type: 'boolean', short: 'l' },
   help: { type: 'boolean', short: 'h' },
@@ -68,6 +70,7 @@ Animation:
       --countdown <time>   Count down, like 90, 5m, 1h30m or 10:00, then show the text
 
 Other:
+  -p, --pick               Pick a font with a live preview of your text
       --random             Use a random font
   -l, --list-fonts         List fonts, or preview your text in every font
   -h, --help               Show this help
@@ -153,6 +156,11 @@ const main = async (): Promise<void> => {
   if (values.clock && values.countdown !== undefined) {
     throw new EchoasciiError('Use either --clock or --countdown, not both')
   }
+  if (values.pick && timer) {
+    throw new EchoasciiError(
+      "--pick shows text, it can't be combined with --clock or --countdown",
+    )
+  }
   if (values.flow) {
     if (timer) {
       throw new EchoasciiError(
@@ -181,6 +189,23 @@ const main = async (): Promise<void> => {
     for (const font of listFonts()) {
       print(`${font}\n${new Banner({ ...options, font }).render(text)}\n`)
     }
+    return
+  }
+
+  if (values.pick) {
+    if (!process.stdin.isTTY || !isTTY) {
+      throw new EchoasciiError('--pick needs a terminal to show the fonts in')
+    }
+    const shown = hasText ? text : 'echoascii'
+    const font = await pick(shown, options)
+    if (!font) {
+      process.exitCode = 130
+      return
+    }
+    print(new Banner({ ...options, font }).render(shown))
+    process.stderr.write(
+      `\nUse it again with: ${pickedCommand(process.argv.slice(2), font)}\n`,
+    )
     return
   }
 
