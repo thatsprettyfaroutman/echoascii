@@ -179,6 +179,36 @@ test('typewriter keeps every frame the final size', () => {
   )
 })
 
+// Maps every visible character to the color code it's drawn with
+const colorsByPosition = (text: string) => {
+  const colors = new Map<string, string>()
+  text.split('\n').forEach((line, y) => {
+    let x = 0
+    let current = ''
+    for (const [, escape, char] of line.matchAll(/(\x1b\[[\d;]*m)|(.)/gsu)) {
+      if (escape) current = escape
+      else if (char !== ' ') colors.set(`${x++},${y}`, current)
+      else x++
+    }
+  })
+  return colors
+}
+
+test('typed letters keep their gradient color as the rest appears', () => {
+  const banner = new Banner({
+    font: 'Small',
+    gradient: 'red,blue',
+    truecolor: true,
+  })
+  const frames = [...typewriter(banner, 'hello')]
+  const final = colorsByPosition(frames.at(-1)!.text)
+  for (const frame of frames) {
+    for (const [position, color] of colorsByPosition(frame.text)) {
+      assert.strictEqual(color, final.get(position), position)
+    }
+  }
+})
+
 test('loadConfig merges sources in order', () => {
   const home = tempDir()
   const cwd = tempDir()
