@@ -46,7 +46,7 @@ const words = args
   .join(config.rows ? '\n ' : ' ')
 
 // Convert to ascii
-const result = figlet.textSync(`\n ${words} \n`, {
+const result = figlet.textSync(` ${words} `, {
   font: config.font,
   horizontalLayout: 'default',
   verticalLayout: 'default',
