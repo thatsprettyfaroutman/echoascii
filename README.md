@@ -25,7 +25,7 @@ $ npx echoascii hello
 ```
 
 ```
-$ npx echoascii --font='ANSI Shadow' hi there
+$ npx echoascii --font 'ANSI Shadow' hi there
 
 ██╗  ██╗██╗    ████████╗██╗  ██╗███████╗██████╗ ███████╗
 ██║  ██║██║    ╚══██╔══╝██║  ██║██╔════╝██╔══██╗██╔════╝
@@ -36,7 +36,7 @@ $ npx echoascii --font='ANSI Shadow' hi there
 ```
 
 ```
-$ npx echoascii --font=Small --rows 'first row' 'second row'
+$ npx echoascii --font Small --rows 'first row' 'second row'
 
   __ _        _
  / _(_)_ _ __| |_   _ _ _____ __ __
@@ -47,12 +47,29 @@ $ npx echoascii --font=Small --rows 'first row' 'second row'
 /__/\___\__\___/_||_\__,_| |_| \___/\_/\_/
 ```
 
+More things to try:
+
+```
+npx echoascii --rainbow hello                  # colors!
+npx echoascii --random hello                   # surprise font
+npx echoascii --list-fonts                     # all font names
+npx echoascii --list-fonts hello | less        # your text in every font
+git branch --show-current | npx echoascii      # pipe text in
+```
+
 ## Options
 
 | Option | Description |
 | --- | --- |
-| `--font=<name>` | Font to use. Defaults to `Larry 3D`. Font names are case sensitive. |
+| `-f, --font <name>` | Font to use. Defaults to `Larry 3D`. Case, spaces and dashes don't matter, and typos get suggestions. |
 | `--rows` | Put each argument on its own row |
+| `-w, --width <cols>` | Wrap at this many columns. Defaults to the terminal width. |
+| `-c, --color <name>` | `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white` or `gray` |
+| `--rainbow` | Rainbow colors |
+| `--random` | Use a random font. Its name is printed to stderr. |
+| `-l, --list-fonts` | List all fonts, or preview your text in every font |
+| `-h, --help` | Show help |
+| `-v, --version` | Show the version |
 
 ## Install
 
@@ -62,20 +79,27 @@ npm i -g echoascii
 
 or add it to a project with `npm i echoascii` / `yarn add echoascii`.
 
-Requires Node.js 17 or newer.
+Requires Node.js 18.3 or newer.
 
 ## Config
 
-Set a default font with a `.echoasciirc` file in the directory you run it from:
+Set defaults in a `.echoasciirc` JSON file, using the same names as the long options:
 
 ```json
 {
-  "font": "Small"
+  "font": "Small",
+  "color": "cyan"
 }
 ```
 
-`.echoasciirc.json`, `.echoasciirc.yml` and an `"echoascii"` key in `package.json` work too.
+echoascii reads `~/.echoasciirc`, then an `"echoascii"` key in `package.json`, then `.echoasciirc` in the current directory. Later ones win, and options on the command line beat them all. `.echoasciirc.json` works too.
 
 ## Fonts
 
-All 330+ fonts ship with the package, so it works offline. Browse and preview them at [patorjk.com/software/taag](https://patorjk.com/software/taag).
+All fonts ship with the package and are read from disk. echoascii never downloads anything. Browse and preview them at [patorjk.com/software/taag](https://patorjk.com/software/taag).
+
+## Upgrading from 1.x
+
+- Node.js 18.3 or newer is required.
+- Config files must be JSON. YAML and `.echoasciirc.js` files are no longer read.
+- Unknown options like `--foo` are now an error instead of being printed. To print text that starts with a dash, put it after `--`: `echoascii -- --foo`.
