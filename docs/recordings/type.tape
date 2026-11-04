@@ -2,7 +2,7 @@
 Output docs/recordings/type.gif
 
 Set FontSize 18
-Set Height 330
+Set Height 370
 Source docs/recordings/shared/style.tape
 
 # Use this checkout's build
